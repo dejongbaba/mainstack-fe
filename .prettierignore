@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Cache and logs
+.cache
+*.log
+
+# Environment files
+.env*
+!.env.example
+
+# IDE specific files
+.idea
+.vscode
+*.swp
+*.swo
+
+# Generated files
+*.gen.*

@@ -1,5 +1,4 @@
 import api from '@/lib/axios';
-import type { AxiosResponse } from 'axios';
 
 export interface User {
   first_name: string;

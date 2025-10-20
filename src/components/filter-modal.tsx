@@ -140,11 +140,13 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="transaction-type" className="text-sm">Transaction Type</Label>
+            <Label htmlFor="transaction-type" className="text-sm">
+              Transaction Type
+            </Label>
             <div className="border rounded-md p-2">
               <div className="text-xs sm:text-sm text-gray-500 mb-2">
-                {filters.transactionTypes.length === 0 
-                  ? 'Select transaction types' 
+                {filters.transactionTypes.length === 0
+                  ? 'Select transaction types'
                   : `${filters.transactionTypes.length} types selected`}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -154,10 +156,10 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
                   { id: 'withdrawals', label: 'Withdrawals' },
                   { id: 'chargebacks', label: 'Chargebacks' },
                   { id: 'cashbacks', label: 'Cashbacks' },
-                  { id: 'refer-and-earn', label: 'Refer & Earn' }
+                  { id: 'refer-and-earn', label: 'Refer & Earn' },
                 ].map(type => (
                   <div key={type.id} className="flex items-center space-x-2">
-                    <div 
+                    <div
                       className={`w-4 h-4 sm:w-5 sm:h-5 rounded border flex items-center justify-center cursor-pointer ${filters.transactionTypes.includes(type.id) ? 'bg-black border-black' : 'border-gray-300'}`}
                       onClick={() => {
                         setFilters(prev => {
@@ -168,7 +170,9 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
                         });
                       }}
                     >
-                      {filters.transactionTypes.includes(type.id) && <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />}
+                      {filters.transactionTypes.includes(type.id) && (
+                        <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
+                      )}
                     </div>
                     <span className="text-xs sm:text-sm">{type.label}</span>
                   </div>
@@ -178,7 +182,9 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm">Status</Label>
+            <Label htmlFor="status" className="text-sm">
+              Status
+            </Label>
             <Select
               value={filters.status}
               onValueChange={value => setFilters(prev => ({ ...prev, status: value }))}
@@ -195,7 +201,9 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm">Amount</Label>
+            <Label htmlFor="amount" className="text-sm">
+              Amount
+            </Label>
             <div className="grid grid-cols-2 gap-2 sm:gap-4">
               <div>
                 <Label htmlFor="min-amount" className="sr-only">
@@ -237,10 +245,14 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
 
         <SheetFooter className="mt-6">
           <div className="flex justify-between w-full gap-4">
-            <Button variant="outline" onClick={handleClearFilters} className="text-xs sm:text-sm h-9">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="text-xs sm:text-sm h-9"
+            >
               Clear
             </Button>
-            <Button onClick={() => onApplyFilters(filters)} className="text-xs sm:text-sm h-9">
+            <Button onClick={() => handleApplyFilters()} className="text-xs sm:text-sm h-9">
               Apply Filter
             </Button>
           </div>

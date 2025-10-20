@@ -73,9 +73,4 @@ export default defineConfig([
 ```
 
 
-#Tasks
-- [ ] Fix the button color and handle hover effects 
-- [ ] Fix sheet animation 
-- [ ] Add component and inputs for filter 
-- [ ] Handle responsiveness of the application
-- [ ] Refactor to use only store and components
+

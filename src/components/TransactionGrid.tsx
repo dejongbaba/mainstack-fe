@@ -256,7 +256,7 @@ export const TransactionGrid = ({
               variant="outline"
               size="lg"
               onClick={onFilter}
-              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
+              className="flex items-center gap-3  bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
             >
               <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="text-xs sm:text-sm">Filter</span>
@@ -265,7 +265,7 @@ export const TransactionGrid = ({
               variant="outline"
               size="lg"
               onClick={handleExport}
-              className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
+              className="flex items-center gap-3 bg-gray-100 hover:bg-gray-200 border-gray-200 text-gray-700"
             >
               <span className="text-xs sm:text-sm">Export list</span>
               <Download className="w-3 h-3 sm:w-4 sm:h-4" />

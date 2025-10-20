@@ -3,10 +3,9 @@ import { TransactionGrid } from '@/components/TransactionGrid';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/store';
 import { Info } from 'lucide-react';
-import { RevenueChart } from './revenue-chart';
-import { FilterModal, type FilterState } from './filter-modal';
 import { useEffect, useState } from 'react';
-import SheetDemo from './sheet-animation-test';
+import { FilterModal, type FilterState } from './filter-modal';
+import { RevenueChart } from './revenue-chart';
 
 function Dashboard() {
   const {
@@ -37,7 +36,7 @@ function Dashboard() {
     fetchUser();
     fetchWallet();
     fetchTransactions();
-  }, [fetchUser, fetchWallet, fetchTransactions]);
+  }, []);
 
   useEffect(() => {
     // Update filtered transactions when transactions change
@@ -90,20 +89,19 @@ function Dashboard() {
     <div className="min-h-screen py-16">
       {/* Header */}
       <NavigationMenu />
-      <SheetDemo />
       {/* Main Content */}
       <main className=" max-w-7xl mx-auto  sm:my-16">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
           <div className="col-span-4">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-6">
               <div className="">
                 <div>Available Balance</div>
                 <div className="text-4xl font-bold text-gray-900">
                   USD {wallet?.balance?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <Button variant="default" className="bg-black hover:bg-black/90 text-white">
+              <Button variant="default" size="lg" className="">
                 Withdraw
               </Button>
             </div>
@@ -128,9 +126,6 @@ function Dashboard() {
                 )}
               </div>
             </div>
-            <button className="bg-blue-500 text-white px-4 py-2 rounded animate-pulse">
-              Click Me
-            </button>
             {/* Total Payout */}
             <div className="">
               <div className="flex items-center justify-between mb-4">

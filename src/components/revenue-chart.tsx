@@ -18,7 +18,7 @@ const demo = [
 
 export const RevenueChart = ({ data = demo }: { data: { name: string; value: number }[] }) => {
   return (
-    <div className="h-64 w-full">
+    <div className="h-[330px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <XAxis

@@ -56,7 +56,7 @@ export const TransactionGrid = ({
       accessorKey: 'type',
       header: '',
       cell: ({ row }) => {
-        const status = row.getValue('status') as keyof typeof statusColors;
+        const status = row.original.status as keyof typeof statusColors;
 
         return (
           <div className="flex items-center space-x-2 sm:space-x-3">
@@ -96,7 +96,6 @@ export const TransactionGrid = ({
       header: '',
       cell: ({ row }) => {
         const amount = row.original.amount;
-        // implement that currency is spelt in full words and not two letter appreviations
         const currencyMap: Record<string, string> = {
           nigeria: 'NGN',
           united_states: 'USD',

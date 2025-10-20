@@ -62,7 +62,7 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader className="mb-6">
-          <SheetTitle className="text-xl font-bold">Filter</SheetTitle>
+          <SheetTitle>Filter</SheetTitle>
         </SheetHeader>
 
         <div className="space-y-6">
@@ -248,11 +248,11 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
             <Button
               variant="outline"
               onClick={handleClearFilters}
-              className="text-xs sm:text-sm h-9"
+              className="text-xs w-full sm:text-sm h-9"
             >
               Clear
             </Button>
-            <Button onClick={() => handleApplyFilters()} className="text-xs sm:text-sm h-9">
+            <Button onClick={() => handleApplyFilters()} className="text-xs w-full sm:text-sm h-9">
               Apply Filter
             </Button>
           </div>

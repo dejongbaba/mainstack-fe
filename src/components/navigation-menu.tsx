@@ -9,7 +9,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-
+import logo from '@/assets/mainstack-logo.png';
 export function NavigationMenu() {
   return (
     <>
@@ -18,8 +18,8 @@ export function NavigationMenu() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
-                <Grid3X3 className="w-4 h-4 text-white" />
+              <div className="w-8 rounded-sm flex items-center justify-center">
+                <img src={logo} className="w-[100px]" />
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { userApi } from '@/services/api';
 import type { User, Wallet, Transaction } from '@/services/api';
 
-interface StoreState {
+export interface StoreState {
   // User slice
   user: User | null;
   isLoadingUser: boolean;

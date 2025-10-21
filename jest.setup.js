@@ -1,7 +1,7 @@
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
-require('@testing-library/jest-dom/extend-expect');
+require('@testing-library/jest-dom');
 
 // Mock the matchMedia function for components that use media queries
 Object.defineProperty(window, 'matchMedia', {

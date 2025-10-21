@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { useStore } from '@/store';
 import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { FilterModal, type FilterState } from './filter-modal';
+import { FilterModal, type FilterFormType } from './filter-modal';
+
 import { RevenueChart } from './revenue-chart';
+import { Sidebar } from './sidebar';
 
 function Dashboard() {
   const {
@@ -43,29 +45,44 @@ function Dashboard() {
     setFilteredTransactions(transactions);
   }, [transactions]);
 
-  const handleFilter = (filters: FilterState) => {
+  const handleFilter = (filters: FilterFormType) => {
     // Apply filters to transactions
-    let filtered = [...transactions];
+    let filteredTransactions = [...transactions];
 
-    // Filter by transaction types if any are selected
-    if (filters.transactionTypes.length > 0) {
-      filtered = filtered.filter(t => filters.transactionTypes.includes(t.type));
+    // Filter by transaction type
+    if (filters.transactionTypes && filters.transactionTypes.length > 0) {
+      filteredTransactions = filteredTransactions.filter(transaction =>
+        filters.transactionTypes?.includes(transaction.type)
+      );
     }
 
-    // Filter by status if selected
-    if (filters.status) {
-      filtered = filtered.filter(t => t.status === filters.status);
+    // Filter by status
+    if (filters.status && filters.status.length > 0) {
+      filteredTransactions = filteredTransactions.filter(transaction =>
+        filters.status?.includes(transaction.status)
+      );
     }
 
-    // Filter by amount range
-    if (filters.amount.min) {
-      filtered = filtered.filter(t => t.amount >= parseFloat(filters.amount.min));
-    }
-    if (filters.amount.max) {
-      filtered = filtered.filter(t => t.amount <= parseFloat(filters.amount.max));
+    // Filter by date range
+    if (filters.dateRange?.from || filters.dateRange?.to) {
+      filteredTransactions = filteredTransactions.filter(transaction => {
+        const transactionDate = new Date(transaction.date);
+        const fromDate = filters.dateRange?.from;
+        const toDate = filters.dateRange?.to;
+
+        if (fromDate && toDate) {
+          return transactionDate >= fromDate && transactionDate <= toDate;
+        } else if (fromDate) {
+          return transactionDate >= fromDate;
+        } else if (toDate) {
+          return transactionDate <= toDate;
+        }
+
+        return true;
+      });
     }
 
-    setFilteredTransactions(filtered);
+    setFilteredTransactions(filteredTransactions);
     setIsFilterModalOpen(false);
   };
 
@@ -89,19 +106,21 @@ function Dashboard() {
     <div className="min-h-screen py-16">
       {/* Header */}
       <NavigationMenu />
+      {/* sidebar */}
+      <Sidebar />
       {/* Main Content */}
       <main className=" max-w-7xl mx-auto  sm:my-16">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
           <div className="col-span-4">
-            <div className="flex items-center gap-6">
+            <div className="mt-8 md:mt-0 flex flex-col md:flex-row items-center gap-6">
               <div className="">
                 <div>Available Balance</div>
                 <div className="text-4xl font-bold text-gray-900">
                   USD {wallet?.balance?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <Button variant="default" size="lg" className="px-16 py-2">
+              <Button variant="default" className=" px-20 font-semibold text-md py-6">
                 Withdraw
               </Button>
             </div>
@@ -109,10 +128,10 @@ function Dashboard() {
               data={transactions?.map(t => ({ name: t.date, value: t.amount })) || []}
             />
           </div>
-          <div className="col-span-2 space-y-6">
+          <div className="flex flex-col col-span-2 space-y-4 md:space-y-6 px-4 md:px-0">
             {/* Available Balance */}
             <div className="">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex  items-center justify-between mb-4">
                 <h3 className="text-sm font-medium text-gray-600">Available Balance</h3>
                 <Info className="w-4 h-4 text-gray-400" />
               </div>

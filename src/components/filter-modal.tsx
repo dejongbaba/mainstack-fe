@@ -1,62 +1,144 @@
-import { useState } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Calendar } from '@/components/ui/calendar';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
-import { Check } from 'lucide-react';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { endOfDay, format, startOfDay, startOfMonth, subDays, subMonths } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApplyFilters: (filters: FilterState) => void;
+  onApplyFilters: (filters: z.infer<typeof FilterFormSchema>) => void;
 }
 
-export interface FilterState {
-  transactionTypes: string[];
-  status: string;
-  dateRange: string;
-  amount: {
-    min: string;
-    max: string;
-  };
-}
+// Define transaction type options
+const transactionTypeOptions = [
+  { value: 'store-transactions', label: 'Store Transactions' },
+  { value: 'get-tipped', label: 'Get Tipped' },
+  { value: 'withdrawals', label: 'Withdrawals' },
+  { value: 'chargebacks', label: 'Chargebacks' },
+  { value: 'cashbacks', label: 'Cashbacks' },
+  { value: 'refer-and-earn', label: 'Refer & Earn' },
+];
 
+// Define status options
+const statusOptions = [
+  { value: 'successful', label: 'Successful' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'failed', label: 'Failed' },
+];
+
+// Define date presets
+type DatePreset = 'today' | 'last7days' | 'thismonth' | 'last3months' | 'custom';
+
+// Define the form schema with Zod
+const FilterFormSchema = z.object({
+  transactionTypes: z.array(z.string()).optional(),
+  status: z.array(z.string()).optional(),
+  dateRange: z.object({
+    preset: z.enum(['today', 'last7days', 'thismonth', 'last3months', 'custom']).optional(),
+    from: z.date().optional(),
+    to: z.date().optional(),
+  }),
+});
+export type FilterFormType = z.infer<typeof FilterFormSchema>
 export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProps) => {
-  const [filters, setFilters] = useState<FilterState>({
-    transactionTypes: [],
-    status: '',
-    dateRange: '',
-    amount: {
-      min: '',
-      max: '',
+  const [activePreset, setActivePreset] = useState<DatePreset | null>(null);
+
+  // Initialize the form with react-hook-form and zod validation
+  const form = useForm<FilterFormType>({
+    resolver: zodResolver(FilterFormSchema),
+    defaultValues: {
+      transactionTypes: [],
+      status: [],
+      dateRange: {
+        preset: undefined,
+        from: undefined,
+        to: undefined,
+      },
     },
   });
 
-  const handleApplyFilters = () => {
-    onApplyFilters(filters);
+  // Handle form submission
+  const onSubmit = (data: z.infer<typeof FilterFormSchema>) => {
+    onApplyFilters(data);
     onClose();
   };
 
+  // Handle clearing filters
   const handleClearFilters = () => {
-    const clearedFilters = {
+    form.reset({
       transactionTypes: [],
-      status: '',
-      dateRange: '',
-      amount: {
-        min: '',
-        max: '',
+      status: [],
+      dateRange: {
+        preset: undefined,
+        from: undefined,
+        to: undefined,
       },
-    };
-    setFilters(clearedFilters);
-    onApplyFilters(clearedFilters);
+    });
+    setActivePreset(null);
+    onApplyFilters(form.getValues());
   };
+
+  // Apply date preset
+  const applyDatePreset = (preset: DatePreset) => {
+    setActivePreset(preset);
+
+    const today = new Date();
+    let fromDate: Date | undefined;
+    let toDate: Date | undefined = endOfDay(today);
+
+    switch (preset) {
+      case 'today':
+        fromDate = startOfDay(today);
+        break;
+      case 'last7days':
+        fromDate = startOfDay(subDays(today, 6));
+        break;
+      case 'thismonth':
+        fromDate = startOfDay(startOfMonth(today));
+        break;
+      case 'last3months':
+        fromDate = startOfDay(subMonths(today, 3));
+        break;
+      default:
+        fromDate = undefined;
+        toDate = undefined;
+    }
+
+    form.setValue('dateRange', {
+      preset,
+      from: fromDate,
+      to: toDate,
+    });
+  };
+
+  // Reset active preset when date is manually selected
+  useEffect(() => {
+    const subscription = form.watch((_, { name }) => {
+      if (name?.startsWith('dateRange.') && name !== 'dateRange.preset' && activePreset) {
+        setActivePreset(null);
+        form.setValue('dateRange.preset', undefined);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, activePreset]);
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -65,198 +147,180 @@ export const FilterModal = ({ isOpen, onClose, onApplyFilters }: FilterModalProp
           <SheetTitle>Filter</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-6">
-          {/* Date Range Tabs */}
-          <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:space-x-2">
-            <Button
-              variant={filters.dateRange === 'today' ? 'default' : 'outline'}
-              size="sm"
-              className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
-              onClick={() => setFilters(prev => ({ ...prev, dateRange: 'today' }))}
-            >
-              Today
-            </Button>
-            <Button
-              variant={filters.dateRange === 'last7days' ? 'default' : 'outline'}
-              size="sm"
-              className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
-              onClick={() => setFilters(prev => ({ ...prev, dateRange: 'last7days' }))}
-            >
-              Last 7 days
-            </Button>
-            <Button
-              variant={filters.dateRange === 'thismonth' ? 'default' : 'outline'}
-              size="sm"
-              className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
-              onClick={() => setFilters(prev => ({ ...prev, dateRange: 'thismonth' }))}
-            >
-              This month
-            </Button>
-            <Button
-              variant={filters.dateRange === 'last3months' ? 'default' : 'outline'}
-              size="sm"
-              className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
-              onClick={() => setFilters(prev => ({ ...prev, dateRange: 'last3months' }))}
-            >
-              Last 3 months
-            </Button>
-          </div>
-
-          {/* Date Range Picker */}
-          <div className="space-y-2">
-            <Label className="text-sm">Date Range</Label>
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              <div>
-                <Label htmlFor="start-date" className="sr-only">
-                  Start Date
-                </Label>
-                <Select>
-                  <SelectTrigger className="text-xs sm:text-sm h-9">
-                    <SelectValue placeholder="17 Jul 2023" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2023-07-17">17 Jul 2023</SelectItem>
-                    <SelectItem value="2023-07-16">16 Jul 2023</SelectItem>
-                    <SelectItem value="2023-07-15">15 Jul 2023</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="end-date" className="sr-only">
-                  End Date
-                </Label>
-                <Select>
-                  <SelectTrigger className="text-xs sm:text-sm h-9">
-                    <SelectValue placeholder="17 Aug 2023" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2023-08-17">17 Aug 2023</SelectItem>
-                    <SelectItem value="2023-08-16">16 Aug 2023</SelectItem>
-                    <SelectItem value="2023-08-15">15 Aug 2023</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Date Range Tabs */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:space-x-2">
+              <Button
+                type="button"
+                variant={activePreset === 'today' ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+                onClick={() => applyDatePreset('today')}
+              >
+                Today
+              </Button>
+              <Button
+                type="button"
+                variant={activePreset === 'last7days' ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+                onClick={() => applyDatePreset('last7days')}
+              >
+                Last 7 days
+              </Button>
+              <Button
+                type="button"
+                variant={activePreset === 'thismonth' ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+                onClick={() => applyDatePreset('thismonth')}
+              >
+                This month
+              </Button>
+              <Button
+                type="button"
+                variant={activePreset === 'last3months' ? 'default' : 'outline'}
+                size="sm"
+                className="text-xs sm:text-sm px-2 sm:px-3 h-8 sm:h-9"
+                onClick={() => applyDatePreset('last3months')}
+              >
+                Last 3 months
+              </Button>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="transaction-type" className="text-sm">
-              Transaction Type
-            </Label>
-            <div className="border rounded-md p-2">
-              <div className="text-xs sm:text-sm text-gray-500 mb-2">
-                {filters.transactionTypes.length === 0
-                  ? 'Select transaction types'
-                  : `${filters.transactionTypes.length} types selected`}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {[
-                  { id: 'store-transactions', label: 'Store Transactions' },
-                  { id: 'get-tipped', label: 'Get Tipped' },
-                  { id: 'withdrawals', label: 'Withdrawals' },
-                  { id: 'chargebacks', label: 'Chargebacks' },
-                  { id: 'cashbacks', label: 'Cashbacks' },
-                  { id: 'refer-and-earn', label: 'Refer & Earn' },
-                ].map(type => (
-                  <div key={type.id} className="flex items-center space-x-2">
-                    <div
-                      className={`w-4 h-4 sm:w-5 sm:h-5 rounded border flex items-center justify-center cursor-pointer ${filters.transactionTypes.includes(type.id) ? 'bg-black border-black' : 'border-gray-300'}`}
-                      onClick={() => {
-                        setFilters(prev => {
-                          const newTypes = prev.transactionTypes.includes(type.id)
-                            ? prev.transactionTypes.filter(t => t !== type.id)
-                            : [...prev.transactionTypes, type.id];
-                          return { ...prev, transactionTypes: newTypes };
-                        });
-                      }}
-                    >
-                      {filters.transactionTypes.includes(type.id) && (
-                        <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
-                      )}
-                    </div>
-                    <span className="text-xs sm:text-sm">{type.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status" className="text-sm">
-              Status
-            </Label>
-            <Select
-              value={filters.status}
-              onValueChange={value => setFilters(prev => ({ ...prev, status: value }))}
-            >
-              <SelectTrigger className="text-xs sm:text-sm h-9">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="successful">Successful</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm">
-              Amount
-            </Label>
-            <div className="grid grid-cols-2 gap-2 sm:gap-4">
-              <div>
-                <Label htmlFor="min-amount" className="sr-only">
-                  Min Amount
-                </Label>
-                <Input
-                  id="min-amount"
-                  placeholder="Min"
-                  className="text-xs sm:text-sm h-9"
-                  value={filters.amount.min}
-                  onChange={e =>
-                    setFilters(prev => ({
-                      ...prev,
-                      amount: { ...prev.amount, min: e.target.value },
-                    }))
-                  }
+            {/* Date Range Picker */}
+            <div className="space-y-2">
+              <Label className="text-sm">Date Range</Label>
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <FormField
+                  control={form.control}
+                  name="dateRange.from"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'text-xs sm:text-sm h-9 w-full justify-start text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(field.value, 'PPP') : <span>Start date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <Label htmlFor="max-amount" className="sr-only">
-                  Max Amount
-                </Label>
-                <Input
-                  id="max-amount"
-                  placeholder="Max"
-                  className="text-xs sm:text-sm h-9"
-                  value={filters.amount.max}
-                  onChange={e =>
-                    setFilters(prev => ({
-                      ...prev,
-                      amount: { ...prev.amount, max: e.target.value },
-                    }))
-                  }
+                <FormField
+                  control={form.control}
+                  name="dateRange.to"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'text-xs sm:text-sm h-9 w-full justify-start text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {field.value ? format(field.value, 'PPP') : <span>End date</span>}
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
             </div>
-          </div>
-        </div>
 
-        <SheetFooter className="mt-6">
-          <div className="flex justify-between w-full gap-4">
-            <Button
-              variant="outline"
-              onClick={handleClearFilters}
-              className="text-xs w-full sm:text-sm h-9"
-            >
-              Clear
-            </Button>
-            <Button onClick={() => handleApplyFilters()} className="text-xs w-full sm:text-sm h-9">
-              Apply Filter
-            </Button>
-          </div>
-        </SheetFooter>
+            {/* Transaction Type */}
+            <FormField
+              control={form.control}
+              name="transactionTypes"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm">Transaction Type</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={transactionTypeOptions}
+                      value={field.value || []}
+                      onValueChange={field.onChange}
+                      placeholder="Select transaction types"
+                      className="text-xs sm:text-sm"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Status */}
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-sm">Status</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={statusOptions}
+                      value={field.value || []}
+                      onValueChange={field.onChange}
+                      placeholder="Select status"
+                      className="text-xs sm:text-sm"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <SheetFooter className="mt-6">
+              <div className="flex justify-between w-full gap-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClearFilters}
+                  className="text-xs w-full sm:text-sm h-9"
+                >
+                  Clear
+                </Button>
+                <Button type="submit" className="text-xs w-full sm:text-sm h-9">
+                  Apply Filter
+                </Button>
+              </div>
+            </SheetFooter>
+          </form>
+        </Form>
       </SheetContent>
     </Sheet>
   );

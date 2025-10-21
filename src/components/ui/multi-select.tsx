@@ -526,7 +526,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
           uniqueOptions.push(option);
         }
       });
-      if (import.meta.env.NODE_ENV === 'development' && duplicates.length > 0) {
+      if (duplicates.length > 0) {
         const action = deduplicateOptions ? 'automatically removed' : 'detected';
         console.warn(
           `MultiSelect: Duplicate option values ${action}: ${duplicates.join(', ')}. ` +
@@ -543,7 +543,7 @@ export const MultiSelect = React.forwardRef<MultiSelectRef, MultiSelectProps>(
     const getOptionByValue = React.useCallback(
       (value: string): MultiSelectOption | undefined => {
         const option = getAllOptions().find(option => option.value === value);
-        if (!option && import.meta.env.NODE_ENV === 'development') {
+        if (!option) {
           console.warn(`MultiSelect: Option with value "${value}" not found in options list`);
         }
         return option;

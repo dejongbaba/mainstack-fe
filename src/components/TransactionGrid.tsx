@@ -71,7 +71,7 @@ export const TransactionGrid = ({
               <div className="font-medium text-gray-900 text-sm sm:text-base truncate max-w-[150px] sm:max-w-[200px] md:max-w-none">
                 {row.original.type === 'withdrawal'
                   ? 'Withdrawal'
-                  : row.original.metadata?.product_name}
+                  : row.original.metadata?.product_name || 'No product name'}
               </div>
               <div className="text-xs sm:text-sm text-gray-500">
                 {row.original.type === 'withdrawal' ? (
@@ -189,7 +189,7 @@ export const TransactionGrid = ({
   };
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="bg-white">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="animate-pulse">

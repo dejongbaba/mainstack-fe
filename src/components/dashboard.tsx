@@ -101,7 +101,7 @@ function Dashboard() {
                   USD {wallet?.balance?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </div>
               </div>
-              <Button variant="default" size="lg" className="">
+              <Button variant="default" size="lg" className="px-16 py-2">
                 Withdraw
               </Button>
             </div>

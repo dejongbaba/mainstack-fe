@@ -123,9 +123,6 @@
 }
 
 @layer base {
-  * {
-    border-color: hsl(var(--border));
-  }
   body {
     font-family:
       'Degular Demo',
